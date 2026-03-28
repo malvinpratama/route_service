@@ -1,39 +1,28 @@
 import 'package:flutter/widgets.dart';
 import 'package:shared/shared.dart';
 
+import 'app_router.dart';
+
 @LazySingleton()
 class RouteService {
-  static GoRouter? _router;
-  static String? _initialLocation;
+  static AppRouter? _router;
 
-  /// Inisialisasi router dengan daftar routes dinamis
+  /// Inisialisasi router dengan daftar routes dari semua module
   void initRouter(
-    List<GoRoute> routes, {
-    String? initialLocation,
-    GoRouter? customRouter,
+    List<AutoRoute> routes, {
     GlobalKey<NavigatorState>? navigatorKey,
-    String? Function(BuildContext context, GoRouterState state)? redirect,
-    List<NavigatorObserver>? observers,
+    List<AutoRouteGuard>? guards,
   }) {
-    if (_router != null) return; // Hanya bisa diinisialisasi sekali
-
-    // Simpan initial location
-    _initialLocation = initialLocation;
-
-    _router =
-        customRouter ??
-        GoRouter(
-          initialLocation: initialLocation,
-          routes: routes,
-          debugLogDiagnostics: true,
-          navigatorKey: navigatorKey,
-          redirect: redirect,
-          observers: observers,
-        );
+    if (_router != null) return;
+    _router = AppRouter(
+      routes: routes,
+      navigatorKey: navigatorKey,
+      guards: guards,
+    );
   }
 
   /// Mengambil instance router yang sudah diinisialisasi
-  GoRouter get router {
+  RootStackRouter get router {
     if (_router == null) {
       throw Exception(
         'Router belum diinisialisasi. Panggil RouteService.initRouter terlebih dahulu.',
@@ -42,12 +31,8 @@ class RouteService {
     return _router!;
   }
 
-  /// Mengambil initial location yang diset saat inisialisasi router
-  String? get initialLocation => _initialLocation;
-
-  /// (Opsional) Reset router jika ingin re-inisialisasi (misal untuk testing)
+  /// Reset router untuk testing
   static void resetRouter() {
     _router = null;
-    _initialLocation = null;
   }
 }
